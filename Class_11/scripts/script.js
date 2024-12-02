@@ -69,3 +69,34 @@ alert(message);
     `It's ${lang}`;
 
 //alert(feedback);
+// https://www.javascripttutorial.net/javascript-bom/javascript-settimeout/
+var timeoutID;
+
+function showAlert() {
+    timeoutID = setTimeout(alert, 3000, 'setTimeout Demo!');
+    console.log("New timeoutID - "+timeoutID);
+}
+
+function cancelAlert() {
+    console.log("timeoutID to be cleared - "+timeoutID);
+    clearTimeout(timeoutID);
+}
+// https://www.javascripttutorial.net/javascript-bom/javascript-setinterval/
+let intervalID;
+
+function start() {
+  intervalID = setInterval(toggleColor, 1000);
+  console.log("New intervalID - " + intervalID);
+  document.getElementById("start").disabled = true;
+}
+
+function stop() {
+  clearInterval(intervalID);
+  console.log("intervalID to be cleared - " + intervalID);
+  document.getElementById("start").disabled = false;
+}
+
+function toggleColor() {
+  let e = document.getElementById("flashtext");
+  e.style.color = e.style.color == "red" ? "blue" : "red";
+}
