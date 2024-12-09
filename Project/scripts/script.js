@@ -1,42 +1,126 @@
-// max cookie size - 4096 bytes (4 KB) - for name + value
-/*
-1. Cookie nolasīšana
-1.1. Cookie filtrēšana (atlasīšana) (domain + path; hostname:port\path1\path2 būs redzams iekš hostname:port\path1\path2 un hostname:port\path1\path2\path3 utt., bet nebūs redzams iekš hostname:port\path1)
-2. Cookie uzdošana (unikāls name iekš domain + path)
-3. Cookie mainīšana
-4. Cookie "dzīves laika" uzdošana (ja laiks nav uzdots - Session)
-5. Cookie izmantošana pēc pārlūka aizvēršanas, atvēršana
-6. Cookie kodēšana (bet ne šifrēšana; piemēram, ā -> %C4%81)
-7. Cookie dzēšana (iztecējušā laika uzdošana)
-*/
+const search = document.getElementById('search'),
+  submit = document.getElementById('submit'),
+  random = document.getElementById('random'),
+  mealsEl = document.getElementById('meals'),
+  resultHeading = document.getElementById('result-heading'),
+  single_mealEl = document.getElementById('single-meal');
 
-var str = document.cookie;
-console.log("cookie vērtība: " + str);
+// Search meal and fetch from API
+function searchMeal(e) {
+  e.preventDefault();
 
-document.cookie = "username_1=admin_1; path=/";
-document.cookie = "username_2=admin_1";
-str = document.cookie;
-console.log("cookie vērtība: "+str);
+  // Clear single meal
+  single_mealEl.innerHTML = '';
 
-document.cookie = "username=admin_2";
-str = document.cookie;
-console.log("cookie vērtība: "+str);
+  // Get search term
+  const term = search.value;
 
-display("username_1", "administrācija_1", 30);
-display("username_2", "admin_2");
+  // Check for empty
+  if (term.trim()) {
+    fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${term}`)
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        resultHeading.innerHTML = `<h2>Search results for '${term}':</h2>`;
 
-
-// https://stackoverflow.com/questions/13154552/how-can-i-set-a-cookie-with-expire-time
-function display(cookie_name, cookie_value, cookie_expire_time_sec) {
-  var now = new Date();
-  var time = now.getTime();
-  if (cookie_expire_time_sec != undefined) {
-    var expireTime = time + 1000 * cookie_expire_time_sec;
-    now.setTime(expireTime);
-    //document.cookie = cookie_name + "=" + cookie_value + ";expires=" + now.toUTCString() + ";path=/";
-    document.cookie = `${encodeURIComponent(cookie_name)}=${encodeURIComponent(cookie_value)};expires=${now.toUTCString()};path=/`;
+        if (data.meals === null) {
+          resultHeading.innerHTML = `<p>There are no search results. Try again!<p>`;
+        } else {
+          mealsEl.innerHTML = data.meals
+            .map(
+              meal => `
+            <div class="meal">
+              <img src="${meal.strMealThumb}" alt="${meal.strMeal}" />
+              <div class="meal-info" data-mealID="${meal.idMeal}">
+                <h3>${meal.strMeal}</h3>
+              </div>
+            </div>
+          `
+            )
+            .join('');
+        }
+      });
+    // Clear search text
+    search.value = '';
   } else {
-    document.cookie = cookie_name + "=" + cookie_value + ";path=/";
+    alert('Please enter a search term');
   }
-  console.log(document.cookie);
 }
+
+// Fetch meal by ID
+function getMealById(mealID) {
+  fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${mealID}`)
+    .then(res => res.json())
+    .then(data => {
+      const meal = data.meals[0];
+
+      addMealToDOM(meal);
+    });
+}
+
+// Fetch random meal from API
+function getRandomMeal() {
+  // Clear meals and heading
+  mealsEl.innerHTML = '';
+  resultHeading.innerHTML = '';
+
+  fetch(`https://www.themealdb.com/api/json/v1/1/random.php`)
+    .then(res => res.json())
+    .then(data => {
+      const meal = data.meals[0];
+
+      addMealToDOM(meal);
+    });
+}
+
+// Add meal to DOM
+function addMealToDOM(meal) {
+  const ingredients = [];
+
+  for (let i = 1; i <= 20; i++) {
+    if (meal[`strIngredient${i}`]) {
+      ingredients.push(
+        `${meal[`strIngredient${i}`]} - ${meal[`strMeasure${i}`]}`
+      );
+    } else {
+      break;
+    }
+  }
+
+  single_mealEl.innerHTML = `
+    <div class="single-meal">
+      <h1>${meal.strMeal}</h1>
+      <img src="${meal.strMealThumb}" alt="${meal.strMeal}" />
+      <div class="single-meal-info">
+        ${meal.strCategory ? `<p>${meal.strCategory}</p>` : ''}
+        ${meal.strArea ? `<p>${meal.strArea}</p>` : ''}
+      </div>
+      <div class="main">
+        <p>${meal.strInstructions}</p>
+        <h2>Ingredients</h2>
+        <ul>
+          ${ingredients.map(ing => `<li>${ing}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+  `;
+}
+
+// Event listeners
+submit.addEventListener('submit', searchMeal);
+random.addEventListener('click', getRandomMeal);
+
+mealsEl.addEventListener('click', e => {
+  const mealInfo = e.composedPath().find(item => {
+    if (item.classList) {
+      return item.classList.contains('meal-info');
+    } else {
+      return false;
+    }
+  });
+
+  if (mealInfo) {
+    const mealID = mealInfo.getAttribute('data-mealid');
+    getMealById(mealID);
+  }
+});

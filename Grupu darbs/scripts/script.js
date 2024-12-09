@@ -1,22 +1,16 @@
-<script>collasuzcm();</script> 
 
-    <script> function collasuzcm() {let c = document.getElementById("collas").value; let cm = c * 2.54; 
+function doSomething() {
+    alert('Form submitted!');
 
-  
-let izvade = "Rezultāts: " + c + " collas ir " + cm + " centimetri!"; 
+    //location.assign('/Nodarbiba_10/level_1/?q1=1&q2=2');
 
- return izvade;} 
+    //let fname = document.getElementById("fname").innerHTML;
+    let fname = document.getElementById("fname").value;
+    //console.log(fname);
+    let lname = document.getElementById("lname").value;
+    //location.assign('https://www.w3schools.com/action_page.php?fname=J&lname=D');
+    //location.assign('https://www.w3schools.com/action_page.php?fname=' + fname + '&lname='+ lname);
+    location.assign(`https://www.w3schools.com/action_page.php?fname=${fname}&lname=${lname}`);
 
-</script> 
-
-  <p style="color:white; 
-
- font-family:Arial;" id="Footeris"></p> 
-
-<script> 
- 
-    const Footeritis = {Vaaards: "Ilvija", Uzvaardsss:"Bauska", Datums: "11/20/2024"}; 
-
-   document.getElementById("Footeris").innerHTML = Footeritis.Vaaards + " " + Footeritis.Uzvaardsss + " | " + Footeritis.Datums 
-
-</script> 
+    return false;
+}
