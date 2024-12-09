@@ -67,3 +67,6 @@ let getSiblings = function (e) {
 };
 
 let siblingss_ = getSiblings(items[0]);
+
+let note = document.getElementById('note');
+console.log(note.textContent);
